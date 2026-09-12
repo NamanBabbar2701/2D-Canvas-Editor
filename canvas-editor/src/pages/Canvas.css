@@ -1,0 +1,40 @@
+.canvas-page {
+    min-height: 100vh;
+    padding : 24px;
+    background: #f8fafc;
+}
+
+.toolbar{
+    display: flex;
+    gap: 10px;
+    padding: 12px;
+    margin-bottom: 20px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    width: fit-content;
+}
+
+.toolbar button {
+    padding: 10px 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.toolbar button:hover {
+    background: #0d78e3;
+}
+
+.canvas-wrapper {
+    width: fit-content;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
