@@ -1,46 +1,87 @@
 .canvas-page {
     min-height: 100vh;
-    padding : 24px;
+    padding : 32px;
     background: #f8fafc;
+    color: #0f172a;
+    overflow-x: auto;
 }
 
 .toolbar{
+    width: 100%;
+    max-width: 1000px;
     display: flex;
     gap: 10px;
-    padding: 12px;
-    margin-bottom: 20px;
+    padding: 12px 14px;
+    margin: 0 auto 20px;
     background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 10px;
-    width: fit-content;
+    box-shadow: 0 2px 8px #0f172a0a;
 }
 
 .toolbar button {
-    padding: 10px 16px;
+    min-width: 40px;
+    padding: 0 16px;
     border: 1px solid #cbd5e1;
-    border-radius: 6px;
+    border-radius: 7px;
     background: #ffffff;
     color: #0f172a;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
+
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.15s ease;
 }
 
 .toolbar button:hover {
-    background: #0d78e3;
+    background: #f8fafc;
+    border-color: #94a3b8;
+    transform: translateY(-1px);
+}
+
+.toolbar button:active {
+    transform: translateY(0);
+}
+
+.toolbar button:last-child {
+    background: #0f172a;
+    border-color: #0f172a;
+    color: #ffffff;
+}
+
+.toolbar button:last-child:hover{
+    background: #1e293b;
+    background-color: #1e293b;
+}
+
+.toolbar input[type="color"] {
+    width: 42px;
+    height: 40px;
+    padding: 3px;
+    border: 1px solid #cbd5e1;
+    border-radius: #ffffff;
+    cursor: pointer;
 }
 
 .canvas-wrapper {
-    width: fit-content;
+    width: 1000px;
+    height: 600px;
     background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 10px;
     overflow: hidden;
     position: relative;
+    box-shadow: 0 4px 16px #0f172a0d ;
 }
 
 .editor-area{
     position: relative;
+    width: 1000px;
+    height: 600px;
+    margin: 0 auto;
 }
 
 .canvas-loading {
@@ -102,8 +143,10 @@
     transform: translateY(-2px);
 }
 .save-status {
+    margin-right: 6px;
     font-size: 14px;
     font-weight: 600;
+    white-space: nowrap;
 }
 
 .save-status.saved{
@@ -118,4 +161,12 @@
     color: #2563eb;
 }
 
+@media (max-width: 700px) {
+  .canvas-page {
+    padding: 20px;
+  }
 
+  .toolbar {
+    flex-wrap: wrap;
+  }
+}
