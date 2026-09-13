@@ -1,4 +1,4 @@
-import { useEffect, useRef} from "react";
+import { useEffect, useRef, useState} from "react";
 import {
   ActiveSelection,
   Circle,
@@ -18,8 +18,17 @@ function Canvas() {
   const canvasRef = useRef(null);
   const fabricCanvasRef = useRef(null);
 
+  const[saveStatus, setSaveStatus] = useState("saved");
+  const[isLoading, setIsLoading] = useState(true);
+
+  const markUnsaved = () => {
+    setSaveStatus("unsaved");
+  };
+
+
   useEffect(() => {
     let isDisposed = false;
+    let isLoadingCanvasData = true;
 
     const canvas = new FabricCanvas(canvasRef.current, {
       width: 1000,
@@ -45,6 +54,10 @@ function Canvas() {
         const data = canvasDoc.data();
 
         if (!data.data) {
+          isLoadingCanvasData = false;
+          
+          setSaveStatus("saved");
+          setIsLoading(false);
           console.log("No saved canvas data found");
           return;
         }
@@ -59,6 +72,10 @@ function Canvas() {
         
         canvas.renderAll();
 
+        isLoadingCanvasData = false;
+        setSaveStatus("saved");
+        setIsLoading(false);
+
         console.log("Canvas loaded successfully");
       } catch (error) {
         if(!isDisposed){
@@ -68,6 +85,15 @@ function Canvas() {
     };
 
     loadCanvas();
+
+    const handleCanvasChange = () => {
+        if (!isLoadingCanvasData) {
+            markUnsaved();
+        }
+    };
+
+    canvas.on("object:modified", handleCanvasChange);
+    canvas.on("text:changed", handleCanvasChange);
 
     const handleKeyDown = (event) => {
       //Select all objects
@@ -100,6 +126,8 @@ function Canvas() {
 
           canvas.discardActiveObject();
           canvas.renderAll();
+
+          markUnsaved();
         }
       }
 
@@ -116,7 +144,10 @@ function Canvas() {
         isDisposed = true;
 
         window.removeEventListener("keydown", handleKeyDown);
-      
+        
+        canvas.off("object:modified", handleCanvasChange);
+        canvas.off("text:changed", handleCanvasChange);
+
         canvas.dispose();
     };
   }, [canvasId]);
@@ -137,6 +168,8 @@ function Canvas() {
     canvas.add(rectangle);
     canvas.setActiveObject(rectangle);
     canvas.renderAll();
+    
+    markUnsaved();
   };
 
   const addCircle = () => {
@@ -154,6 +187,8 @@ function Canvas() {
     canvas.add(circle);
     canvas.setActiveObject(circle);
     canvas.renderAll();
+
+    markUnsaved();
   };
 
   const addText = () => {
@@ -171,6 +206,8 @@ function Canvas() {
     canvas.add(text);
     canvas.setActiveObject(text);
     canvas.renderAll();
+
+    markUnsaved();
   };
 
   const togglePen = () => {
@@ -187,6 +224,8 @@ function Canvas() {
     if (canvas.isDrawingMode) {
       canvas.freeDrawingBrush.width = 5;
     }
+
+    markUnsaved();
   };
 
   const changeColor = (color) => {
@@ -213,6 +252,8 @@ function Canvas() {
     }
 
     canvas.requestRenderAll();
+
+    markUnsaved();
   };
 
   const saveCanvas = async () => {
@@ -221,7 +262,9 @@ function Canvas() {
     if (!canvas || !canvasId) return;
 
     try {
-      // const canvasData = canvas.toJSON(); //Converting directly to JSON is producing undefined values which firestore is not allowing..
+        setSaveStatus("saving");
+      
+        // const canvasData = canvas.toJSON(); //Converting directly to JSON is producing undefined values which firestore is not allowing..
       const canvasData = JSON.stringify(canvas.toJSON());
 
       await updateDoc(doc(db, "canvases", canvasId), {
@@ -229,8 +272,12 @@ function Canvas() {
         updatedAt: serverTimestamp(),
       });
 
+      setSaveStatus("saved");
+
       console.log("Canvas Saved Successfully");
     } catch (error) {
+      setSaveStatus("unsaved");
+
       console.error("Error saving canvas:", error);
     }
   };
@@ -238,6 +285,11 @@ function Canvas() {
   return (
     <div className="canvas-page">
       <div className="toolbar">
+        <span className={`save-status ${saveStatus}`}>
+            {saveStatus === "saved" && "Saved"}
+            {saveStatus === "unsaved" && "Unsaved Changes"}
+            {saveStatus === "saving" && "Saving..."}
+        </span>
         <button onClick={addRectangle}>Rectangle</button>
 
         <button onClick={addCircle}>Circle</button>
@@ -255,6 +307,11 @@ function Canvas() {
       </div>
 
       <div className="canvas-wrapper">
+        {isLoading && (
+            <div className="canvas-loading">
+                Loading canvas...
+            </div>
+        )}
         <canvas ref={canvasRef} />
       </div>
     </div>

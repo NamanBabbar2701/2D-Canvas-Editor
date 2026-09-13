@@ -36,5 +36,41 @@
     border: 1px solid #e2e8f0;
     border-radius: 10px;
     overflow: hidden;
+    position: relative;
 }
+
+.canvas-loading {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #ffffff 0.9;
+
+    font-size: 16px;
+    font-weight: 600;
+    color: #475569;
+
+    z-index: 10;
+}
+
+.save-status {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.save-status.saved{
+    color: #16a34a;
+}
+
+.save-status.unsaved{
+    color: #d97706;
+}
+
+.save-status.saving{
+    color: #2563eb;
+}
+
 
