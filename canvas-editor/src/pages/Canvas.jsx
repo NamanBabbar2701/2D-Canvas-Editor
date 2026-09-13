@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState} from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActiveSelection,
   Circle,
@@ -8,23 +8,24 @@ import {
   Rect,
 } from "fabric";
 import { doc, updateDoc, getDoc, serverTimestamp } from "firebase/firestore";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { db } from "../firebase";
 import "./Canvas.css";
 
 function Canvas() {
   const { canvasId } = useParams();
+  const navigate = useNavigate();
 
   const canvasRef = useRef(null);
   const fabricCanvasRef = useRef(null);
 
-  const[saveStatus, setSaveStatus] = useState("saved");
-  const[isLoading, setIsLoading] = useState(true);
+  const [saveStatus, setSaveStatus] = useState("saved");
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
   const markUnsaved = () => {
     setSaveStatus("unsaved");
   };
-
 
   useEffect(() => {
     let isDisposed = false;
@@ -46,6 +47,11 @@ function Canvas() {
 
         if (!canvasDoc.exists()) {
           console.error("Canvas not found");
+
+          isLoadingCanvasData = false;
+          setLoadError("Canvas not found");
+          setIsLoading(false);
+
           return;
         }
 
@@ -55,7 +61,7 @@ function Canvas() {
 
         if (!data.data) {
           isLoadingCanvasData = false;
-          
+
           setSaveStatus("saved");
           setIsLoading(false);
           console.log("No saved canvas data found");
@@ -64,12 +70,12 @@ function Canvas() {
 
         const canvasData = JSON.parse(data.data);
 
-        if(isDisposed) return;
-        
+        if (isDisposed) return;
+
         await canvas.loadFromJSON(canvasData);
-        
-        if(isDisposed) return;
-        
+
+        if (isDisposed) return;
+
         canvas.renderAll();
 
         isLoadingCanvasData = false;
@@ -78,18 +84,22 @@ function Canvas() {
 
         console.log("Canvas loaded successfully");
       } catch (error) {
-        if(!isDisposed){
-            console.error("Error loading canvas:", error);
-        }        
+        if (!isDisposed) {
+          console.error("Error loading canvas:", error);
+
+          isLoadingCanvasData = false;
+          setLoadError("Unable to load the canvas");
+          setIsLoading(false);
+        }
       }
     };
 
     loadCanvas();
 
     const handleCanvasChange = () => {
-        if (!isLoadingCanvasData) {
-            markUnsaved();
-        }
+      if (!isLoadingCanvasData) {
+        markUnsaved();
+      }
     };
 
     canvas.on("object:modified", handleCanvasChange);
@@ -141,14 +151,14 @@ function Canvas() {
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-        isDisposed = true;
+      isDisposed = true;
 
-        window.removeEventListener("keydown", handleKeyDown);
-        
-        canvas.off("object:modified", handleCanvasChange);
-        canvas.off("text:changed", handleCanvasChange);
+      window.removeEventListener("keydown", handleKeyDown);
 
-        canvas.dispose();
+      canvas.off("object:modified", handleCanvasChange);
+      canvas.off("text:changed", handleCanvasChange);
+
+      canvas.dispose();
     };
   }, [canvasId]);
 
@@ -168,7 +178,7 @@ function Canvas() {
     canvas.add(rectangle);
     canvas.setActiveObject(rectangle);
     canvas.renderAll();
-    
+
     markUnsaved();
   };
 
@@ -262,9 +272,9 @@ function Canvas() {
     if (!canvas || !canvasId) return;
 
     try {
-        setSaveStatus("saving");
-      
-        // const canvasData = canvas.toJSON(); //Converting directly to JSON is producing undefined values which firestore is not allowing..
+      setSaveStatus("saving");
+
+      // const canvasData = canvas.toJSON(); //Converting directly to JSON is producing undefined values which firestore is not allowing..
       const canvasData = JSON.stringify(canvas.toJSON());
 
       await updateDoc(doc(db, "canvases", canvasId), {
@@ -284,35 +294,46 @@ function Canvas() {
 
   return (
     <div className="canvas-page">
-      <div className="toolbar">
-        <span className={`save-status ${saveStatus}`}>
+      {!loadError && (
+        <div className="toolbar">
+          <span className={`save-status ${saveStatus}`}>
             {saveStatus === "saved" && "Saved"}
             {saveStatus === "unsaved" && "Unsaved Changes"}
             {saveStatus === "saving" && "Saving..."}
-        </span>
-        <button onClick={addRectangle}>Rectangle</button>
+          </span>
+          <button onClick={addRectangle}>Rectangle</button>
 
-        <button onClick={addCircle}>Circle</button>
+          <button onClick={addCircle}>Circle</button>
 
-        <button onClick={addText}>Text</button>
+          <button onClick={addText}>Text</button>
 
-        <button onClick={togglePen}>Pen</button>
+          <button onClick={togglePen}>Pen</button>
 
-        <input
-          type="color"
-          onChange={(event) => changeColor(event.target.value)}
-        />
+          <input
+            type="color"
+            onChange={(event) => changeColor(event.target.value)}
+          />
 
-        <button onClick={saveCanvas}>Save</button>
-      </div>
+          <button onClick={saveCanvas}>Save</button>
+        </div>
+      )}
 
-      <div className="canvas-wrapper">
-        {isLoading && (
-            <div className="canvas-loading">
-                Loading canvas...
-            </div>
+      <div className="editor-area">
+        {isLoading && <div className="canvas-loading">Loading canvas...</div>}
+
+        <div className="canvas-wrapper">
+          <canvas ref={canvasRef} />
+        </div>
+
+        {loadError && (
+          <div className="canvas-error">
+            <h2>{loadError}</h2>
+
+            <p>This canvas doesn't exist or could not be loaded.</p>
+
+            <button onClick={() => navigate("/")}>Back to Home</button>
+          </div>
         )}
-        <canvas ref={canvasRef} />
       </div>
     </div>
   );
