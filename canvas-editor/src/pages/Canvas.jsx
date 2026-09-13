@@ -1,5 +1,5 @@
 import { useEffect, useRef} from "react";
-import { Circle, Canvas as FabricCanvas, IText, PencilBrush, Rect } from "fabric";
+import { ActiveSelection, Circle, Canvas as FabricCanvas, IText, PencilBrush, Rect } from "fabric";
 import "./Canvas.css"
 
 function Canvas() {
@@ -14,6 +14,43 @@ function Canvas() {
         });
 
         fabricCanvasRef.current = canvas;
+
+        const handleKeyDown = (event) => {
+            //Select all objects
+            if (event.ctrlKey && event.key.toLowerCase() === "a"){
+                event.preventDefault();
+
+                const objects = canvas.getObjects();
+
+                if(objects.length > 0){
+                    const selection = new ActiveSelection(objects, {
+                        canvas: canvas,
+                    });
+
+                    canvas.setActiveObject(selection);
+                    canvas.renderAll();
+                }
+
+                return;
+            }
+
+            //Delete selected Objects
+
+            if(event.key === "Delete") {
+                const activeObjects = canvas.getActiveObjects();
+
+                if(activeObjects.length > 0) {
+                    activeObjects.forEach((object) => {
+                        canvas.remove(object);
+                    });
+
+                    canvas.discardActiveObject();
+                    canvas.renderAll();
+                }
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
 
         return () => {
             canvas.dispose();
@@ -85,8 +122,33 @@ function Canvas() {
 
         if(canvas.isDrawingMode) {
             canvas.freeDrawingBrush.width = 5;
-            canvas.freeDrawingBrush.color = "#0f172a";
         }
+    };
+
+    const changeColor = (color) => {
+        const canvas = fabricCanvasRef.current;
+
+        if(!canvas) return;
+
+        const activeObject = canvas.getActiveObject();
+
+        if(activeObject) {
+            if(activeObject.type === "path"){
+                activeObject.set({
+                    stroke: color
+                });
+            } else {
+                activeObject.set({
+                    fill: color
+                });
+            }
+        }    
+        
+        if(canvas.freeDrawingBrush) {
+            canvas.freeDrawingBrush.color = color;
+        }
+
+        canvas.requestRenderAll();
     };
 
     return(
@@ -107,6 +169,11 @@ function Canvas() {
                 <button onClick={togglePen}>
                     Pen
                 </button>
+
+                <input
+                    type="color"
+                    onChange={(event) => changeColor(event.target.value)}
+                />
             </div>
 
             <div className="canvas-wrapper">   
