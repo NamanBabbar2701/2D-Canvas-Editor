@@ -170,13 +170,13 @@ The project is being built phase-by-phase, with the required functionality prior
 - [x] Canvas creation
 - [x] Canvas ID generation
 - [x] Canvas URL routing
-- [ ] Fabric.js canvas
-- [ ] Rectangle tool
-- [ ] Circle tool
-- [ ] Text tool
-- [ ] Pen tool
-- [ ] Object manipulation
-- [ ] Text and color editing
+- [x] Fabric.js canvas
+- [x] Rectangle tool
+- [x] Circle tool
+- [x] Text tool
+- [x] Pen tool
+- [x] Object manipulation
+- [x] Text and color editing
 - [ ] Canvas persistence
 - [ ] UI polish and testing
 - [ ] Deployment
