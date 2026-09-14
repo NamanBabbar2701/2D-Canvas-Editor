@@ -18,14 +18,48 @@ function Canvas() {
 
   const canvasRef = useRef(null);
   const fabricCanvasRef = useRef(null);
+  const saveVersionRef = useRef(0);
 
   const [saveStatus, setSaveStatus] = useState("saved");
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
 
   const markUnsaved = () => {
+    saveVersionRef.current += 1;
     setSaveStatus("unsaved");
   };
+
+    const saveCanvas = async () => {
+    const canvas = fabricCanvasRef.current;
+
+    if (!canvas || !canvasId) return;
+
+    try {
+      setSaveStatus("saving");
+
+      const versionAtSave = saveVersionRef.current;
+      // const canvasData = canvas.toJSON(); //Converting directly to JSON is producing undefined values which firestore is not allowing..
+      const canvasData = JSON.stringify(canvas.toJSON());
+
+      await updateDoc(doc(db, "canvases", canvasId), {
+        data: canvasData,
+        updatedAt: serverTimestamp(),
+      });
+
+      if(saveVersionRef.current === versionAtSave){
+        setSaveStatus("saved");
+      } else {
+        setSaveStatus("unsaved");
+      }
+
+      console.log("Canvas Saved Successfully");
+    } catch (error) {
+      setSaveStatus("unsaved");
+
+      console.error("Error saving canvas:", error);
+    }
+  };
+
 
   useEffect(() => {
     let isDisposed = false;
@@ -142,10 +176,11 @@ function Canvas() {
       }
 
       //Ctrl+S to save the Canvas
-      // if(event.ctrlKey && event.key.toLowerCase() === "s"){
-      //     event.preventDefault();
+      if(event.ctrlKey && event.key.toLowerCase() === "s"){
+          event.preventDefault();
+          saveCanvas();
 
-      // }
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -235,7 +270,6 @@ function Canvas() {
       canvas.freeDrawingBrush.width = 5;
     }
 
-    markUnsaved();
   };
 
   const changeColor = (color) => {
@@ -266,31 +300,8 @@ function Canvas() {
     markUnsaved();
   };
 
-  const saveCanvas = async () => {
-    const canvas = fabricCanvasRef.current;
 
-    if (!canvas || !canvasId) return;
-
-    try {
-      setSaveStatus("saving");
-
-      // const canvasData = canvas.toJSON(); //Converting directly to JSON is producing undefined values which firestore is not allowing..
-      const canvasData = JSON.stringify(canvas.toJSON());
-
-      await updateDoc(doc(db, "canvases", canvasId), {
-        data: canvasData,
-        updatedAt: serverTimestamp(),
-      });
-
-      setSaveStatus("saved");
-
-      console.log("Canvas Saved Successfully");
-    } catch (error) {
-      setSaveStatus("unsaved");
-
-      console.error("Error saving canvas:", error);
-    }
-  };
+  
 
   return (
     <div className="canvas-page">
