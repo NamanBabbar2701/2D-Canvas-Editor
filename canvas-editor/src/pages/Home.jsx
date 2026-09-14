@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { collection, addDoc} from "firebase/firestore";
 import {db} from "../firebase";
 
 function Home() {
     const navigate = useNavigate();
+    const [canvasInput, setCanvasInput] = useState("");
 
     const createNewCanvas = async () => {
       try{
@@ -18,6 +20,26 @@ function Home() {
       }catch (error) {
         console.error("Error creating canvas:", error);
       }
+    };
+
+    const loadExistingCanvas = () => {
+        const input = canvasInput.trim();
+
+        if(!input) return;
+
+        let canvasId = input;
+        
+        if(input.startsWith("http://") || input.startsWith("https://")) {
+            const url = new URL(input);
+
+            const pathParts = url.pathname.split("/").filter(Boolean);
+
+            if(pathParts[0] === "canvas" && pathParts[1]) {
+                canvasId = pathParts[1];
+            }
+        }
+
+        navigate(`/canvas/${canvasId}`);
     };
 
     return (
@@ -40,6 +62,28 @@ function Home() {
               <button className="create-button" onClick={createNewCanvas}>
                 + Create New Canvas
               </button>
+
+              <div className="load-canvas">
+                <div className="divider">
+                    <span>or</span>
+                </div>
+
+                <input
+                    type="text"
+                    placeholder="Enter Canvas ID or URL"
+                    value={canvasInput}
+                    onChange={(event) => setCanvasInput(event.target.value)}
+                    onKeyDown={(event) => {
+                        if(event.key === "Enter") {
+                            loadExistingCanvas();
+                        }
+                    }}
+                />
+
+                <button onClick={loadExistingCanvas}>
+                    Load Existing Canvas
+                </button>
+              </div>
             </main>
           </div>
     );

@@ -27,6 +27,7 @@ function Canvas() {
   const [saveStatus, setSaveStatus] = useState("saved");
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [canvasName, setCanvasName] = useState("Untitled Canvas");
 
   const markUnsaved = () => {
     saveVersionRef.current += 1;
@@ -64,6 +65,29 @@ function Canvas() {
     }
   };
 
+    const renameCanvas = async (newName) => {
+      const trimmedName = newName.trim();
+
+      if(!canvasId) return;
+
+      if(!trimmedName){
+        setCanvasName("Untitled Canvas");   
+        return;
+      } 
+
+      try{
+        await updateDoc(doc(db, "canvases", canvasId), {
+          name: trimmedName,
+        });
+
+        setCanvasName(trimmedName);
+
+        console.log("Canvas renamed successfully");
+      }catch(error){
+        console.error("Error renaming canvas:", error);
+      }
+    };
+
 
   useEffect(() => {
     let isDisposed = false;
@@ -96,6 +120,7 @@ function Canvas() {
         if (isDisposed) return;
 
         const data = canvasDoc.data();
+        setCanvasName(data.name || "Untitled Canvas");
 
         if (!data.data) {
           isLoadingCanvasData = false;
@@ -304,12 +329,41 @@ function Canvas() {
     markUnsaved();
   };
 
+  const exportAsPNG = () => {
+    const canvas = fabricCanvasRef.current;
 
-  
+    if(!canvas) return;
+
+    const dataURL = canvas.toDataURL({
+      format: "png",
+      multiplier: 2,
+    });
+
+    const link = document.createElement("a");
+    link.download = `${canvasName || "canvas"}.png`;
+    link.href = dataURL;
+    link.click();
+  }
 
   return (
     <div className="canvas-page">
       {!loadError && (
+        <>
+          <div className="canvas-header">
+            <input 
+              type="text"
+              value={canvasName}
+              onChange={(event) => setCanvasName(event.target.value)}
+              onBlur={(event) => renameCanvas(event.target.value)}
+              onKeyDown={(event) => {
+                if(event.key === "Enter") {
+                  event.target.blur();
+                }
+              }}
+              className="canvas-name-input"
+              aria-label="Canvas name"
+            />
+          </div>
         <div className="toolbar">
           <span className={`save-status ${saveStatus}`}>
             {saveStatus === "saved" && "Saved"}
@@ -334,7 +388,10 @@ function Canvas() {
           />
 
           <button onClick={saveCanvas}>Save</button>
+
+          <button onClick={exportAsPNG}> Export PNG</button>
         </div>
+        </>
       )}
 
       <div className="editor-area">
