@@ -20,9 +20,12 @@ The project allows users to create individual canvases, add and manipulate objec
 - Delete objects
 - Select all objects
 - Save canvas to Firestore
-- Restore saved canvas using its URL
+- Restore saved canvas state
 - Save status indicator
 - Loading and error states
+- Rename canvas
+- Load an existing canvas using its ID or URL
+- Export Canvas as PNG
 
 ## 🛠️ Tech Stack
 
@@ -39,31 +42,38 @@ The project allows users to create individual canvases, add and manipulate objec
 ```text
 Home Page
     │
-    ▼
-Create New Canvas
+    ├── Create New Canvas
+    │       │
+    │       ▼
+    │   Firestore Document
+    │       │
+    │       ▼
+    │   /canvas/:canvasId
     │
-    ▼
-Create Firestore Document
-    │
-    ▼
-Firestore Document ID
-    │
-    ▼
-/canvas/:canvasId
-    │
-    ▼
-Canvas Editor
-    │
-    ├── Add objects
-    ├── Edit objects
-    ├── Draw
-    └── Change colors
-    │
-    ▼
-Save
-    │
-    ▼
-Firestore
+    └── Load Existing Canvas
+            │
+            ▼
+       Canvas ID / URL
+            │
+            ▼
+       /canvas/:canvasId
+            │
+            ▼
+       Canvas Editor
+            │
+            ├── Add objects
+            ├── Edit objects
+            ├── Draw
+            ├── Change colors
+            ├── Rename canvas
+            ├── Export PNG
+            └── Export PDF
+            │
+            ▼
+          Save
+            │
+            ▼
+        Firestore
 
 ```
 
@@ -77,6 +87,14 @@ Firestore
 │   ├── src/
 │   ├── package.json
 │   └── README.md
+│
+├── screenshots/
+│    ├── exporting_canvas.png
+│    ├── home_page.png
+│    ├── load_existing_canvas.png
+│    ├── renaming_canvas.png
+│    ├── saved_canvas.png
+│    └── untitled_canvas.png
 │
 ├── architecture.png     # Architecture diagram
 ├── 2D-Canvas-Editor.drawio
@@ -104,10 +122,12 @@ see:
 
 ## 🧩 Architecture
 
+![Architecture Diagram](./architecture.png)
+
 ### 📌 Project Status
 **Completed**
 
-The required canvas editing, routing, Firebase persistence and deployment functionality has been implemented and tested.
+The required canvas editing, routing, Firebase persistence, and deployment functionality has been implemented and tested. Additional features including canvas renaming, loading existing canvases, and PNG/PDF export have also been added.
 
 ### 🔗 Links
 - Live Demo: [`2D Canvas Editor`](https://2-d-canvas-editor-rho.vercel.app/)

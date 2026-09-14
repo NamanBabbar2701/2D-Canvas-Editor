@@ -7,9 +7,11 @@
 }
 
 .canvas-header {
-  width: 100%;
-  padding: 16px 24px 8px;
-  box-sizing: border-box;
+    width: 100%;
+    max-width: 1000px;
+    box-sizing: border-box;
+    padding: 16px 0 8px;
+    margin: 0 auto 20px;
 }
 
 .canvas-name-input {

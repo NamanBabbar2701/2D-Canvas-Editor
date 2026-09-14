@@ -10,6 +10,8 @@ The editor allows users to create a canvas, add different types of objects, edit
 
 - Create a new canvas
 - Unique URL for every canvas
+- Load an existing canvas using its Canvas ID or URL
+- Rename canvas
 - Rectangle tool
 - Circle tool
 - Text tool
@@ -22,11 +24,11 @@ The editor allows users to create a canvas, add different types of objects, edit
 - Select all objects with `Ctrl + A`
 - Save canvas state to Firebase Firestore
 - Restore saved canvas state after refreshing
+- Export canvas as PNG
 - `Ctrl + S` keyboard shortcut
 - Saved / Unsaved Changes / Saving status
 - Loading state while opening a canvas
 - Error handling for invalid canvas URLs
-- Responsive interface
 
 Authentication is not implemented because it was not required for the assignment.
 
@@ -70,6 +72,10 @@ For example:
 
 When this URL is opened, the application retrieves the corresponding canvas from Firestore and loads it into Fabric.js.
 
+An existing canvas can also be opened from the Home page by entering its Canvas ID or a canvas URL.
+
+Once inside the editor, the canvas can be renamed and exported as PNG in addition to the core editing and persistence features.
+
 
 ```text
 Home Page
@@ -92,7 +98,9 @@ Canvas Editor
     ├── Add Objects
     ├── Edit Objects
     ├── Draw
-    └── Change Colors
+    ├── Change Colors
+    ├── Rename Canvas
+    ├── Export PNG
     │
     ▼
 Save Canvas
@@ -249,11 +257,28 @@ Saving...
 
 A save version counter is used when saving. This prevents the UI from incorrectly showing `Saved` if the user makes another change while a previous save request is still in progress.
 
+### Canvas Rename
+
+The canvas name is stored in the `name` field of the corresponding Firestore document.
+
+When the user edits the canvas name, the updated value is written back to Firestore. The name is also loaded when the canvas is opened so it persists across refreshes and future visits.
+
+### Loading an Existing Canvas
+
+The Home page provides an option to load an existing canvas using either its Canvas ID or its full canvas URL.
+
+The application extracts the canvas ID and navigates to `/canvas/:canvasId`. The Canvas page then retrieves the corresponding document from Firestore.
+
+### Canvas Export
+
+The editor supports exporting the current canvas as PNG.
+
+For PNG export, Fabric.js converts the current canvas into an image data URL which is then downloaded by the browser.
+
+
 ---
 
 ## 🐛 Challenges & Solutions
-
-## 🛠️ Challenges & Solutions
 
 While building the editor, I encountered a few issues during development. Here are some of the main challenges I faced and how I solved them.
 
@@ -414,6 +439,36 @@ That ID is then used in the route:
 
 ---
 
+## 📸 Screenshots
+
+Screenshots can be added here as the project documentation is finalized.
+
+### Home Page
+
+![Home Page](../screenshots/home_page.png)
+
+### Canvas Editor
+
+![Canvas Editor](../screenshots/untitled_canvas.png)
+
+### Renaming Canvas
+
+![Rename Canvas](../screenshots/renaming_canvas.png)
+
+### Saved Canvas
+
+![Saved Canvas](../screenshots/saved_Canvas.png)
+
+### Export Canvas
+
+![Export Canvas](../screenshots/exporting_canvas.png)
+
+### Load Existing Canvas
+
+![Load Canvas](../screenshots/load_existing_canvas.png)
+
+---
+
 ## 🌐 Live Demo
 
 The application is deployed on Vercel:
@@ -436,23 +491,7 @@ Saved canvas is restored
 
 ---
 
-## 📸 Screenshots
 
-Screenshots can be added here as the project documentation is finalized.
-
-### Home Page
-
-![Home Page](../screenshots/Home_page.png)
-
-### Canvas Editor
-
-![Canvas Editor](../screenshots/Editable_Canvas.png)
-
-### Saved Canvas
-
-![Saved Canvas](../screenshots/Saved_Canvas.png)
-
----
 
 ## 📌 Project Status
 
@@ -460,7 +499,7 @@ Screenshots can be added here as the project documentation is finalized.
 
 The required functionality for the assignment has been implemented, tested, and deployed.
 
-The current scope focuses on the core canvas editing and persistence experience. Advanced editor features such as undo/redo, layers, copy/paste, and similar functionality are outside the current scope.
+Additional features including canvas renaming, loading existing canvases, and exporting canvases as PNG have also been implemented.
 
 ---
 
