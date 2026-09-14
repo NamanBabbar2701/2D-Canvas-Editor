@@ -10,6 +10,10 @@ import {
 import { doc, updateDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "../firebase";
+import { RiRectangleLine } from "react-icons/ri";
+import { GoCircle } from "react-icons/go";
+import { RxText } from "react-icons/rx";
+import { BsBrush } from "react-icons/bs";
 import "./Canvas.css";
 
 function Canvas() {
@@ -312,13 +316,17 @@ function Canvas() {
             {saveStatus === "unsaved" && "Unsaved Changes"}
             {saveStatus === "saving" && "Saving..."}
           </span>
-          <button onClick={addRectangle}>Rectangle</button>
+          <button onClick={addRectangle}>
+            <RiRectangleLine size={21} />Rectangle</button>
 
-          <button onClick={addCircle}>Circle</button>
+          <button onClick={addCircle}>
+            <GoCircle size={21} />Circle</button>
 
-          <button onClick={addText}>Text</button>
+          <button onClick={addText}>
+            <RxText size={21} />Text</button>
 
-          <button onClick={togglePen}>Pen</button>
+          <button onClick={togglePen}>
+            <BsBrush size={21} />Pen</button>
 
           <input
             type="color"

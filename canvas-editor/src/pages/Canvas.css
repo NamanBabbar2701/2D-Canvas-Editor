@@ -57,6 +57,10 @@
     background-color: #1e293b;
 }
 
+.toolbar button svg {
+    flex-shrink: 0;
+}
+
 .toolbar input[type="color"] {
     width: 42px;
     height: 40px;
