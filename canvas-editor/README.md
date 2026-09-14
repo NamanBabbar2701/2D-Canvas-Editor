@@ -1,6 +1,8 @@
 # 🎨 2D Canvas Editor
 
-A lightweight web-based 2D canvas editor built with **React, Fabric.js, and Firebase Firestore**.
+A simple web-based 2D canvas editor built with **React, Fabric.js, and Firebase Firestore**.
+
+I built this project as part of an SDE internship assignment. The goal was to create a small editor where users can create a canvas, add and edit objects, draw freely, and save their work for later.
 
 The editor allows users to create a canvas, add different types of objects, edit and manipulate them, draw freely, and save their work. Each canvas has its own URL, so a saved canvas can be opened again using the same link.
 
@@ -45,7 +47,7 @@ Authentication is not implemented because it was not required for the assignment
 
 ---
 
-## 🏗️ Application Structure
+## 🏗️ How It Works
 
 The application has two main routes:
 
@@ -68,9 +70,6 @@ For example:
 
 When this URL is opened, the application retrieves the corresponding canvas from Firestore and loads it into Fabric.js.
 
----
-
-## 🔄 Application Flow
 
 ```text
 Home Page
@@ -201,11 +200,11 @@ canvas-editor/
 
 ### Fabric.js and React
 
-The Fabric.js canvas instance is stored using React's `useRef`.
+I use `useRef` to keep a reference to the Fabric.js canvas instance. This lets me work with the same canvas instance without putting it into React state.
 
-This allows the Fabric.js instance to remain available across React renders without putting the canvas object into React state.
 
-`useEffect` is used for the Fabric.js lifecycle:
+
+I use `useEffect` for the canvas lifecycle:
 
 - Create the canvas
 - Load saved canvas data
@@ -254,75 +253,77 @@ A save version counter is used when saving. This prevents the UI from incorrectl
 
 ## 🐛 Challenges & Solutions
 
-While building the editor, a few issues came up during development.
+## 🛠️ Challenges & Solutions
 
-### 1. Storing Fabric.js data in Firestore
+While building the editor, I encountered a few issues during development. Here are some of the main challenges I faced and how I solved them.
 
-Initially, the Fabric.js canvas data was being passed directly to Firestore. This caused errors because some nested values were not suitable for Firestore.
+### 1. Storing Fabric.js Data in Firestore
 
-The solution was to serialize the canvas data into a JSON string before saving:
+Initially, I tried passing the Fabric.js canvas data directly to Firestore. This caused errors because some of the nested values were not suitable for Firestore.
+
+I solved this by serializing the canvas data into a JSON string before saving it:
 
 ```js
 JSON.stringify(canvas.toJSON())
 ```
 
-The string is parsed again when the canvas is loaded.
+When loading the canvas, I parse the JSON string again and restore the canvas state.
 
 ---
 
-### 2. Freehand drawing brush
+### 2. Freehand Drawing Brush
 
-The Pen tool initially failed because a drawing brush was not always available on the Fabric.js canvas.
+Initially, the Pen tool did not work reliably because a drawing brush was not always available on the Fabric.js canvas.
 
-I fixed this by explicitly creating a `PencilBrush` when needed.
-
----
-
-### 3. Async canvas loading and React Strict Mode
-
-During development, asynchronous Firestore loading could finish after the Fabric.js canvas had already been disposed.
-
-This resulted in errors caused by trying to interact with a canvas that no longer existed.
-
-An `isDisposed` check was added so that asynchronous operations stop updating the canvas after the component has been unmounted.
+I fixed this by explicitly creating a `PencilBrush` whenever it was needed, ensuring that the freehand drawing functionality was consistently available.
 
 ---
 
-### 4. Loading and error UI
+### 3. Async Canvas Loading and React Strict Mode
 
-The loading and error elements were initially placed inside the area managed by Fabric.js.
+While developing the application, I encountered errors when asynchronous Firestore loading completed after the Fabric.js canvas had already been disposed.
 
-This caused problems because Fabric.js manages the canvas element and its surrounding rendering behavior.
+This happened because the asynchronous operation was still trying to interact with a canvas that no longer existed.
 
-The UI was separated from the Fabric.js-managed canvas so that Fabric.js only handles the actual canvas.
+I resolved this by adding an `isDisposed` check so that asynchronous operations stop updating the canvas after the component has been unmounted or the canvas has been disposed.
 
 ---
 
-### 5. Vercel build
+### 4. Loading and Error UI
 
-The first production deployment exposed missing runtime dependencies in `package.json`.
+Initially, I placed the loading and error UI elements inside the area managed by Fabric.js.
 
-After adding the required dependencies, the project was successfully built locally using:
+This caused rendering and interaction issues because Fabric.js manages the canvas element and its surrounding rendering behavior.
+
+I resolved this by separating the application UI from the Fabric.js-managed canvas. Fabric.js is now responsible only for the actual canvas, while React handles the loading and error states separately.
+
+---
+
+### 5. Vercel Build
+
+During my first production deployment, the Vercel build revealed that some runtime dependencies were missing from `package.json`.
+
+I added the required dependencies and verified the production build locally using:
 
 ```bash
 npm run build
 ```
 
-and then deployed again.
+After confirming that the build completed successfully, I redeployed the application to Vercel.
 
 ---
 
 ### 6. React Router and Vercel
 
-The application uses client-side routing for URLs such as:
+My application uses client-side routing for URLs such as:
 
 ```text
 /canvas/abc123
 ```
 
-Refreshing such a URL initially resulted in a Vercel 404 because Vercel was looking for a server-side route.
+Initially, refreshing one of these URLs resulted in a Vercel 404 because Vercel was trying to resolve the path as a server-side route instead of allowing React Router to handle it.
 
-A rewrite was added in `vercel.json` so that these routes are handled by the React application.
+I resolved this by adding a rewrite rule in `vercel.json` so that all application routes are served through the React application:
 
 ```json
 {
@@ -334,6 +335,9 @@ A rewrite was added in `vercel.json` so that these routes are handled by the Rea
   ]
 }
 ```
+
+This allowed React Router to correctly handle routes such as `/canvas/abc123`, including when the page is refreshed directly.
+
 
 ---
 
@@ -438,15 +442,15 @@ Screenshots can be added here as the project documentation is finalized.
 
 ### Home Page
 
-![Home Page](./canvas_editor.png)
+![Home Page](../screenshots/Home_page.png)
 
 ### Canvas Editor
 
-_Add a screenshot of the editor here._
+![Canvas Editor](../screenshots/Editable_Canvas.png)
 
 ### Saved Canvas
 
-_Add a screenshot showing a saved canvas after refreshing the page._
+![Saved Canvas](../screenshots/Saved_Canvas.png)
 
 ---
 
